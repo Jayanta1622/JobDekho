@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import pkg from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import bcrypt from "bcrypt";
-const { Jwt } = pkg;
+
 const userSchema = new Schema(
   {
     username: {
@@ -19,7 +19,7 @@ const userSchema = new Schema(
       lowecase: true,
       trim: true,
     },
-    fullname: {
+    fullName: {
       type: String,
       required: true,
       trim: true,
@@ -27,7 +27,6 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
-      required: true,
     },
     coverImage: {
       type: String,
@@ -39,7 +38,7 @@ const userSchema = new Schema(
     postedJobs: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Jobs",
+        ref: "Job",
       },
     ],
     refreshToken: {
@@ -62,15 +61,13 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
 userSchema.methods.generateAccessToken = function () {
-  Jwt.sign(
+  return jwt.sign(
     {
-      //  data to add in token
       _id: this._id,
       email: this.email,
       username: this.username,
-      fullname: this.fullname,
+      fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -78,18 +75,15 @@ userSchema.methods.generateAccessToken = function () {
     }
   );
 };
-
-userSchema.methods.generateRefreshToken = function () {
-  Jwt.sign(
+userSchema.methods.generteRefreshToken = function () {
+  return jwt.sign(
     {
-      //  data to add in token
       _id: this._id,
     },
-    process.env.REFERSH_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: process.env.REFERSH_TOKEN_EXPIRY,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
 };
-
 export const User = mongoose.model("User", userSchema);
