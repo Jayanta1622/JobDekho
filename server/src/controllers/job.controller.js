@@ -21,7 +21,7 @@ const addJob = asyncHandler(async (req, res) => {
   }
   console.log(added_by)
 
-  const new_job = await new Job.create({
+  const new_job = await Job.create({
     added_by,
     job_title,
     job_description,
@@ -35,4 +35,16 @@ const addJob = asyncHandler(async (req, res) => {
 
   return res.status(201).json(new ApiResponse(200, new_job, "Job added successfuly!!"));
 });
-export { addJob };
+
+const getJobById= asyncHandler(async(req,res)=>{
+  const {job_id}= req.body;
+
+  const job= await Job.findOne({_id:job_id});
+
+  if(!job){
+    throw new ApiError(400, "No job found!!");
+  }
+
+  return res.status(201).json(new ApiResponse(200, job, "Got Job Successfully!!"));
+})
+export { addJob, getJobById };

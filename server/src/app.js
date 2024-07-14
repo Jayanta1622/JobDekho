@@ -3,7 +3,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import homeRouter from "./routes/home.routes.js";
 import userRouter from "./routes/user.routes.js";
-import jobRouter from './routes/job.routes.js'
+import jobRouter from "./routes/job.routes.js";
+import skillRouter from "./routes/skill.routes.js";
+
 const app = express();
 
 app.use(
@@ -22,5 +24,6 @@ app.use(cookieParser());
 app.use("/", homeRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
+app.use("/api/v1/skill", skillRouter);
 
 export { app };
