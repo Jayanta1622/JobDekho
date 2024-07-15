@@ -21,7 +21,7 @@ const addJob = asyncHandler(async (req, res) => {
   if (required_skills.length <= 0) {
     throw new ApiError(400, "Atleast one skill is required!!");
   }
-  console.log(added_by)
+  console.log(added_by);
 
   const new_job = await Job.create({
     added_by,
@@ -31,71 +31,87 @@ const addJob = asyncHandler(async (req, res) => {
     required_experience,
   });
 
-  if(!new_job){
+  if (!new_job) {
     throw new ApiError(400, "Something went worng in Addition of job!!");
   }
 
-  return res.status(201).json(new ApiResponse(200, new_job, "Job added successfuly!!"));
+  return res
+    .status(201)
+    .json(new ApiResponse(200, new_job, "Job added successfuly!!"));
 });
 
-const getJobById= asyncHandler(async(req,res)=>{
-  const {job_id}= req.body;
+const getJobById = asyncHandler(async (req, res) => {
+  const { job_id } = req.body;
 
-  const job = await Job.findOne({ _id: job_id }).populate('required_skills').populate('applyed_details');
+  const job = await Job.findOne({ _id: job_id })
+  .populate('required_skills')
+  .populate({
+    path: 'applyed_details',
+    populate: {
+      path: 'applied_by',
+      model: 'User',
+      select: '-password -refreshToken -postedJobs -__v'
+    }
+  });
 
-  if(!job){
+  if (!job) {
     throw new ApiError(400, "No job found!!");
   }
 
-  return res.status(201).json(new ApiResponse(200, job, "Got Job Successfully!!"));
+  return res
+    .status(201)
+    .json(new ApiResponse(200, job, "Got Job Successfully!!"));
 });
 
-const applyToAJob= asyncHandler(async(req,res)=>{
-  const applied_by= req.user._id;
-  const {job_id, experience}=req.body;
+const applyToAJob = asyncHandler(async (req, res) => {
+  const applied_by = req.user._id;
+  const { job_id, experience } = req.body;
 
-  if(!job_id){
+  if (!job_id) {
     throw new ApiError(400, "Job id Required!!");
   }
 
-  const isJobExists= await Job.findOne({_id:job_id});
+  const isJobExists = await Job.findOne({ _id: job_id });
 
-  if(!isJobExists){
+  if (!isJobExists) {
     throw new ApiError(400, "No Job Found for given job_id");
   }
 
-  if(experience.trim()===''){
+  if (experience.trim() === "") {
     throw new ApiError(400, "Experience is Required!!");
   }
 
-  const resume_local_path= req.files?.resume[0]?.path;
-  if(!resume_local_path){
+  const resume_local_path = req.files?.resume[0]?.path;
+  if (!resume_local_path) {
     throw new ApiError(400, "Not Found Resume Local Path");
   }
 
-  const resumeInstance= await uploadOnCloudinary(resume_local_path, "raw");
+  const resumeInstance = await uploadOnCloudinary(resume_local_path, "raw");
 
-  if(!resumeInstance){
-    throw new ApiError(400, "Something went worng in uploding resume on Clodinary!!");
+  if (!resumeInstance) {
+    throw new ApiError(
+      400,
+      "Something went worng in uploding resume on Clodinary!!"
+    );
   }
 
-  const newApplyer= await AppliedData.create({
+  const newApplyer = await AppliedData.create({
     applied_by,
     resume: resumeInstance?.url,
     experience,
-    job_id
+    job_id,
   });
 
-  if(!newApplyer){
-    throw new ApiError(400, "Something went wrong in uploading data!!")
+  if (!newApplyer) {
+    throw new ApiError(400, "Something went wrong in uploading data!!");
   }
 
   isJobExists.applyed_details.push(newApplyer._id);
   isJobExists.save();
 
-  return res.status(200).json(new ApiResponse(201, isJobExists, "Applied to Job successfully!!"));
-})
-
-
+  return res
+    .status(200)
+    .json(new ApiResponse(201, isJobExists, "Applied to Job successfully!!"));
+});
 
 export { addJob, getJobById, applyToAJob };
