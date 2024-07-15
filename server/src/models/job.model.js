@@ -17,14 +17,15 @@ const jobSchema = new Schema(
       required: true,
     },
     required_skills: [{ type: Schema.Types.ObjectId, ref: "Skill" }],
-    required_experience:{
-        type:String,
-        required:true
-    }
+    required_experience: {
+      type: String,
+      required: true,
+    },
+    applyed_details: [{ type: Schema.Types.ObjectId, ref: "AppliedData" }],
   },
   {
     timestamps: true,
   }
 );
 
-export const Job= mongoose.model("Job",jobSchema);
+export const Job = mongoose.model("Job", jobSchema);
